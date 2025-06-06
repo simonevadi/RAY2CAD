@@ -1,0 +1,63 @@
+import FreeCAD
+import Part
+import json
+from collections import OrderedDict
+import os
+
+doc = FreeCAD.newDocument("SoTeXS")
+
+with open("/home/simone/projects/BESSYIII/CADPy/sotexs.json", "r") as f:
+    beamline_elements = json.load(f, object_pairs_hook=OrderedDict)
+
+centers = []
+key_list = list(beamline_elements.keys())
+
+for i, (name, pos) in enumerate(beamline_elements.items()):
+    x_mm = float(pos["x"])
+    y_mm = float(pos["y"])
+    z_mm = float(pos["z"])
+
+    if i == 0:
+        # Define source cube
+        source_edge = 1000
+        cube = doc.addObject("Part::Box", "SourceBox")
+        cube.Length = source_edge
+        cube.Width = source_edge
+        cube.Height = source_edge
+        cube.Placement.Base = FreeCAD.Vector(x_mm - source_edge / 2, y_mm - source_edge / 2, z_mm)
+
+    # Add beam path point
+    point = FreeCAD.Vector(x_mm, y_mm, z_mm)
+    centers.append(point)
+
+    # Add red sphere at all points except the source
+    if i > 0:
+        sphere = doc.addObject("Part::Sphere", f"{name}")
+        sphere.Radius = 100
+        sphere.Placement.Base = point
+        sphere.ViewObject.ShapeColor = (1.0, 0.0, 0.0)
+
+# Draw beamline path
+if len(centers) > 1:
+    wire = Part.makePolygon(centers)
+    line_obj = doc.addObject("Part::Feature", "BeamlinePath")
+    line_obj.Shape = wire
+    line_obj.ViewObject.LineWidth = 5  # in pixels
+
+
+doc.recompute()
+
+# Determine the directory of the current script
+script_dir = os.path.dirname(os.path.realpath(__file__))
+# Build the output file path
+output_path = os.path.join(script_dir, "sotexs/sotexs.FCStd")
+# Save the FreeCAD document
+doc.saveAs(output_path)
+
+# Adjust GUI view (only if run inside GUI)
+try:
+    import FreeCADGui
+    FreeCADGui.SendMsgToActiveView("ViewFit")
+    FreeCADGui.activeDocument().activeView().viewAxonometric()
+except ImportError:
+    pass
