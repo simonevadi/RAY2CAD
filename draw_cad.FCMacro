@@ -4,9 +4,12 @@ import json
 from collections import OrderedDict
 import os
 
+# Determine the directory of the current script
+script_dir = os.path.dirname(os.path.realpath(__file__))
+
 doc = FreeCAD.newDocument("SoTeXS")
 
-with open("/home/simone/projects/BESSYIII/CADPy/sotexs.json", "r") as f:
+with open(os.path.join(script_dir, "sotexs","sotexs.json"), "r") as f:
     beamline_elements = json.load(f, object_pairs_hook=OrderedDict)
 
 centers = []
@@ -47,8 +50,7 @@ if len(centers) > 1:
 
 doc.recompute()
 
-# Determine the directory of the current script
-script_dir = os.path.dirname(os.path.realpath(__file__))
+
 # Build the output file path
 output_path = os.path.join(script_dir, "sotexs/sotexs.FCStd")
 # Save the FreeCAD document

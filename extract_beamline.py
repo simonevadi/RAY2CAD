@@ -2,7 +2,7 @@ import json
 
 from raypyng.rml import RMLFile
 
-rml = RMLFile('rml/sotexs.rml')
+rml = RMLFile('sotexs/sotexs.rml')
 
 
 beamline_dict = {}
@@ -15,5 +15,5 @@ for i, oe in enumerate(rml.beamline.children()):
 
 
 
-with open("sotexs.json", "w") as f:
+with open("sotexs/sotexs.json", "w") as f:
     json.dump(beamline_dict, f, indent=4, sort_keys=False)
